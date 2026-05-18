@@ -6,7 +6,7 @@ A self-hosted, cross-platform email time capsule app. Write letters today, deliv
 
 ## Disclaimer
 
-Please don't roast me for AI slop, this was just a proof of concept. For context, the last time I wrote production code was in 1993, in Pascal. Since then, my work has been more about leadership, architecture, security principles, and understanding how systems fit together. I also haven't had time to test it thoroughly, but at first glance it works as intended and I am very happy with, and may I say, impressed by the result.
+Please don't roast me for AI slop, this was just a proof of concept. For context, the last time I any decent code was in 1993, in Pascal. Since then, my work has been more about leadership, architecture, security principles, and understanding how systems fit together. I also haven't had time to test it thoroughly, but at first glance it works as intended and I am very happy with, and may I say, impressed by the result.
 
 All I was trying to gain was an understanding of how this crazy new world of AI works, and whether I could deliver a half‑decent, albeit simple product with very little practical experience in this field.
 
