@@ -1,1 +1,1 @@
-A sample of screenshots
+Screenshot of the main screens
