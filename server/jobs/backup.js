@@ -310,6 +310,17 @@ function restoreFromBuffer(encryptedBuffer, backupKey) {
 
   fs.writeFileSync(DB_PATH, db.data);
 
+  // Remove any leftover WAL journal files from the previously running database.
+  // If these are left behind they will be inconsistent with the restored DB
+  // and cause SQLite to throw SQLITE_NOTADB on next startup.
+  for (const ext of ['-shm', '-wal']) {
+    const walFile = DB_PATH + ext;
+    if (fs.existsSync(walFile)) {
+      fs.unlinkSync(walFile);
+      console.log(`[Restore] 🗑  Removed stale journal file: ${walFile}`);
+    }
+  }
+
   const secret = entries.find(e => e.name === 'secret.key');
   if (secret) fs.writeFileSync(SECRET_PATH, secret.data, { mode: 0o600 });
 
