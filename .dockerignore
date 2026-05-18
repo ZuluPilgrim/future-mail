@@ -1,0 +1,29 @@
+# Dependencies — installed fresh inside the container
+node_modules/
+client/node_modules/
+
+# Local data — never baked into the image, always in a volume
+futuremail.db
+secret.key
+backup.key
+backups/
+data/
+
+# Dev and build artifacts
+client/dist/
+*.log
+
+# Git
+.git/
+.gitignore
+
+# Docker files themselves
+Dockerfile
+docker-compose.yml
+.dockerignore
+
+# Docs and scripts
+README.md
+install.sh
+.env
+.env.example
