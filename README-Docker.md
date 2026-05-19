@@ -1,4 +1,4 @@
-# FutureMail v4.7 — Docker Deployment Guide
+# FutureMail v4.72 — Docker Deployment Guide
 
 ---
 
@@ -45,27 +45,28 @@ sudo apt install docker-compose-plugin
 
 ## Installation
 
-> **Note:** The steps below assume `future-mail-v4.7.zip` was downloaded to your `~/Downloads` folder. If you saved it elsewhere, adjust the path accordingly.
+> **Note:** The steps below assume `future-mail-v4.72.zip` was downloaded to your `~/Downloads` folder. If you saved it elsewhere, adjust the path accordingly.
 
 ### Step 1 — Extract the zip
 
 ```bash
 mkdir ~/future-mail && cd ~/future-mail
-unzip ~/Downloads/future-mail-v4.7.zip
+unzip ~/Downloads/future-mail-v4.72.zip
 mv future-mail/* . && mv future-mail/.* . 2>/dev/null
 rm -rf ~/Downloads/future-mail
 ```
 
-### Step 2 — Configure your port (optional)
+### Step 2 — Configure your ports (optional)
 
-By default FutureMail runs on port **3008**. To use a different port, open `docker-compose.yml` and change the left number on the ports line:
+By default FutureMail runs HTTPS on port **3008** with an HTTP redirect on port **3009**. To use different ports, open `docker-compose.yml` and change the left numbers:
 
 ```yaml
 ports:
-  - "3008:3001"   # change 3008 to your preferred port
+  - "3008:3001"   # HTTPS — change 3008 to your preferred port
+  - "3009:3002"   # HTTP redirect — keep this one port higher than above
 ```
 
-Leave this step out to use the default port 3008.
+Leave this step out to use the defaults.
 
 ### Step 3 — Build and start
 
@@ -84,16 +85,22 @@ Docker will:
 ### Step 4 — Open in your browser
 
 ```
-http://localhost:3008
+https://localhost:3008
 ```
 
 Or if running on a remote server, replace `localhost` with the **IP address or hostname** of that server:
 
 ```
-http://192.168.1.100:3001
-http://yourserver.local:3001
-http://futuremail.co.nz:3001
+https://192.168.1.100:3008
+https://yourserver.local:3008
+https://futuremail.co.nz:3008
 ```
+
+> **Certificate warning:** Your browser will display a security warning because the certificate is self-signed. This is expected. Click through it:
+> - **Chrome / Edge:** "Advanced" → "Proceed to ... (unsafe)"
+> - **Firefox:** "Advanced" → "Accept the Risk and Continue"
+>
+> To permanently remove the warning, import `./data/certs/cert.pem` into your OS or browser trust store. See the **Trusting the Certificate** section below.
 
 The first-run setup wizard will appear automatically. Follow the steps to:
 1. Create your admin account
@@ -113,6 +120,9 @@ All data is stored in a `./data` folder created automatically next to your `dock
     secret.key       — JWT + database encryption source key
     backup.key       — backup file encryption key
     backups/         — encrypted .fmbak backup files
+    certs/
+      cert.pem       — self-signed TLS certificate (auto-generated)
+      key.pem        — TLS private key (auto-generated, permissions 600)
 ```
 
 This folder persists across container restarts, rebuilds, and updates.
@@ -121,21 +131,60 @@ This folder persists across container restarts, rebuilds, and updates.
 
 ## Changing the Port
 
-Open `docker-compose.yml` and change the left number on the ports line:
+Open `docker-compose.yml` and change the left numbers on both ports lines:
 
 ```yaml
 ports:
-  - "3008:3001"   # change 3008 to any port you want
+  - "3008:3001"   # HTTPS — change 3008 to any port you want
+  - "3009:3002"   # HTTP redirect — keep this one port higher than above
 ```
 
-The right number (`3001`) is the internal container port — never change that. Only the left number (the host port) needs updating.
+The right numbers (`3001`, `3002`) are internal container ports — never change those. Then restart:
+```bash
+docker compose up -d
+```
+
+Access the app at `https://localhost:3008` (or your server's IP/hostname on that port).
+
+---
+
+## Trusting the Certificate
+
+The self-signed certificate is saved at `./data/certs/cert.pem`. Importing it into your trust store removes the browser warning permanently.
+
+**Linux:**
+```bash
+sudo cp data/certs/cert.pem /usr/local/share/ca-certificates/futuremail.crt
+sudo update-ca-certificates
+```
+
+**Windows:**
+Double-click `cert.pem` → Install Certificate → Local Machine → "Trusted Root Certification Authorities" → Finish.
+
+**macOS:**
+```bash
+sudo security add-trusted-cert -d -r trustRoot -k /Library/Keychains/System.keychain data/certs/cert.pem
+```
+
+The certificate is valid for 10 years and is auto-regenerated if deleted.
+
+---
+
+## Disabling HTTPS
+
+To revert to plain HTTP, edit `docker-compose.yml`:
+
+```yaml
+ports:
+  - "3008:3001"
+environment:
+  - HTTPS_ENABLED=false
+```
 
 Then restart:
 ```bash
 docker compose up -d
 ```
-
-Access the app at `http://localhost:3008` (or your server's IP/hostname on that port).
 
 ---
 
@@ -203,11 +252,12 @@ docker compose logs futuremail
 ```
 
 **Cannot reach the app from another machine**
-Ensure the port is open in your server's firewall. On Ubuntu:
+Ensure both ports are open in your server's firewall. On Ubuntu:
 ```bash
-sudo ufw allow 3008/tcp
+sudo ufw allow 3008/tcp   # HTTPS
+sudo ufw allow 3009/tcp   # HTTP redirect
 ```
-Replace `3001` with your chosen port.
+Replace the numbers with your chosen ports.
 
 **Reset everything and start completely fresh**
 ```bash

@@ -1,4 +1,4 @@
-# ✉ FutureMail v4.7
+# ✉ FutureMail v4.72
 
 A self-hosted, cross-platform email time capsule app. Write letters today, deliver them to anyone in the future.
 
@@ -28,6 +28,8 @@ This code is used at your own risk and has not been audited in any way.
 - **Encrypted backups** — `.fmbak` files protected by a backup key set during setup
 - **Restore at setup** — restore a previous installation before creating any accounts
 - **Zero config** — no `.env` file required; everything configured in-app
+- **HTTPS built-in** — self-signed TLS certificate auto-generated on first run; swap for a real cert anytime
+- **HTTP → HTTPS redirect** — plain HTTP requests are automatically redirected
 - **100% self-hosted** — no third-party services required
 
 ---
@@ -64,7 +66,7 @@ See `README-Docker.md` for the full Docker deployment guide.
 docker compose up -d --build
 ```
 
-Open `http://yourserver:3008` in your browser. The first-run setup wizard appears automatically.
+Open `https://yourserver:3008` in your browser. Your browser will show a certificate warning — click through it (Chrome: "Advanced → Proceed", Firefox: "Advanced → Accept the Risk"). The first-run setup wizard appears automatically.
 
 ### Persistent data
 
@@ -76,16 +78,30 @@ All data lives in a `./data` folder next to `docker-compose.yml`:
 | `./data/secret.key` | JWT + DB encryption source — never delete |
 | `./data/backup.key` | Backup encryption key — set during setup |
 | `./data/backups/` | Encrypted `.fmbak` backup files |
+| `./data/certs/cert.pem` | Self-signed TLS certificate (auto-generated) |
+| `./data/certs/key.pem` | TLS private key (auto-generated, permissions 600) |
 
 Data survives container restarts and image rebuilds.
 
 ### Changing the port
 
-Open `docker-compose.yml` and change the left number on the ports line:
+Open `docker-compose.yml` and change the left numbers on both ports lines:
 
 ```yaml
 ports:
-  - "3008:3001"   # change 3008 to your preferred port
+  - "3008:3001"   # HTTPS — change 3008 to your preferred port
+  - "3009:3002"   # HTTP redirect — keep this one port higher than above
+```
+
+### Disabling HTTPS
+
+To revert to plain HTTP, set `HTTPS_ENABLED=false` in `docker-compose.yml` and remove the second ports line:
+
+```yaml
+ports:
+  - "3008:3001"
+environment:
+  - HTTPS_ENABLED=false
 ```
 
 ### Useful commands
@@ -101,7 +117,7 @@ docker compose ps              # Check container health
 
 ### Running behind a reverse proxy (Nginx / Caddy)
 
-For HTTPS and a custom domain, put a reverse proxy in front. Example with Caddy:
+FutureMail now includes built-in HTTPS, so a reverse proxy is optional. You might still want one for a clean domain on port 443 or to front multiple services. If using a reverse proxy, set `HTTPS_ENABLED=false` in `docker-compose.yml` so the proxy handles TLS instead. Example with Caddy:
 
 ```yaml
 services:
@@ -311,6 +327,7 @@ Verify at [mxtoolbox.com/spf.aspx](https://mxtoolbox.com/spf.aspx).
 
 | Layer | Protection |
 |---|---|
+| Transport | TLS 1.2/1.3 via self-signed certificate (auto-generated on first run) |
 | Database | AES-256 encrypted at rest (SQLite3MultipleCiphers) |
 | Backups | AES-256-GCM encrypted, require backup key to restore |
 | Passwords | bcrypt hashed (cost factor 12) |
@@ -418,6 +435,8 @@ future-mail/
 ├── secret.key                # Auto-generated — never delete
 ├── backup.key                # Set during setup — required to restore backups
 ├── futuremail.db             # AES-256 encrypted SQLite database
+├── data/certs/cert.pem       # Auto-generated self-signed TLS certificate
+├── data/certs/key.pem        # Auto-generated TLS private key
 └── .env.example              # Optional — only needed to change port
 ```
 
