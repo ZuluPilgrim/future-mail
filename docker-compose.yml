@@ -1,0 +1,50 @@
+services:
+  futuremail:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: production
+
+    container_name: futuremail
+    restart: unless-stopped
+
+    ports:
+      # HTTPS — main port. Access the app at https://<your-host>:3008
+      - "3008:3001"
+      # HTTP redirect — automatically redirects http://<your-host>:3009 → HTTPS
+      - "3009:3002"
+
+    volumes:
+      - ./data:/data
+
+    environment:
+      - NODE_ENV=production
+      - PORT=3001
+      - DATA_DIR=/data
+      - TZ=Pacific/Auckland
+      - HTTPS_ENABLED=true   # Set to false to revert to plain HTTP
+
+    networks:
+      - futuremail_net
+
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "--no-check-certificate", "https://localhost:3001/api/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 15s
+
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+networks:
+  futuremail_net:
+    driver: bridge
+    ipam:
+      config:
+        # Change this subnet if it conflicts with anything on your network.
+        # Avoid subnets already in use — check with: ip addr show
+        - subnet: 172.100.0.0/24

@@ -1,0 +1,67 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    @apply bg-parchment-50 text-ink-800 font-sans;
+    background-image:
+      radial-gradient(ellipse at 20% 20%, rgba(196, 154, 86, 0.08) 0%, transparent 60%),
+      radial-gradient(ellipse at 80% 80%, rgba(139, 32, 32, 0.05) 0%, transparent 50%);
+    min-height: 100vh;
+  }
+
+  * {
+    @apply border-parchment-200;
+  }
+}
+
+@layer components {
+  .btn-primary {
+    @apply bg-ink-800 text-parchment-50 px-6 py-3 font-sans font-medium
+           hover:bg-ink-700 active:bg-ink-900 transition-all duration-200
+           rounded-sm tracking-wide text-sm disabled:opacity-50 disabled:cursor-not-allowed;
+  }
+
+  .btn-ghost {
+    @apply border border-ink-800 text-ink-800 px-6 py-3 font-sans font-medium
+           hover:bg-ink-800 hover:text-parchment-50 transition-all duration-200
+           rounded-sm tracking-wide text-sm;
+  }
+
+  .btn-danger {
+    @apply border border-seal-500 text-seal-500 px-4 py-2 font-sans font-medium text-sm
+           hover:bg-seal-500 hover:text-white transition-all duration-200 rounded-sm;
+  }
+
+  .input-field {
+    @apply w-full bg-white/60 border border-parchment-300 rounded-sm px-4 py-3
+           font-sans text-ink-800 placeholder-ink-400/60
+           focus:outline-none focus:border-ink-600 focus:ring-1 focus:ring-ink-600/30
+           transition-all duration-200;
+  }
+
+  .card {
+    @apply bg-white/70 border border-parchment-200 rounded-sm shadow-sm
+           backdrop-blur-sm;
+  }
+
+  .paper-texture {
+    background-image:
+      url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23noise)' opacity='0.03'/%3E%3C/svg%3E");
+  }
+}
+
+/* Scrollbar */
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: #D4B57A; border-radius: 3px; }
+
+/* Letter compose textarea */
+textarea.letter-body {
+  font-family: 'Playfair Display', Georgia, serif;
+  font-size: 1.0625rem;
+  line-height: 1.9;
+  color: #2C1810;
+  resize: vertical;
+}

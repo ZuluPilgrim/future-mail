@@ -1,0 +1,25 @@
+{
+  "name": "future-mail",
+  "version": "1.0.0",
+  "description": "Self-hosted scheduled email time capsule app",
+  "scripts": {
+    "dev": "concurrently \"npm run server\" \"npm run client\"",
+    "server": "node server/index.js",
+    "client": "cd client && npm run dev",
+    "build": "cd client && npm run build",
+    "start": "node server/index.js"
+  },
+  "dependencies": {
+    "bcryptjs": "^2.4.3",
+    "better-sqlite3-multiple-ciphers": "^12.0.0",
+    "concurrently": "^8.2.2",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.5",
+    "express": "^4.18.3",
+    "jsonwebtoken": "^9.0.2",
+    "node-cron": "^3.0.3",
+    "nodemailer": "^6.9.11",
+    "qrcode": "^1.5.4",
+    "speakeasy": "^2.0.0"
+  }
+}
